@@ -1,0 +1,55 @@
+service: fordonsstatus-api
+
+provider:
+  name: aws
+  runtime: python3.9
+  region: us-east-1
+  environment:
+    VEHICLES_TABLE: VehiclesTable  
+
+functions:
+  createVehicle:
+    handler: handler.create_vehicle
+    events:
+      - http:
+          path: vehicles
+          method: post
+
+  getVehicles:
+    handler: handler.get_vehicles
+    events:
+      - http:
+          path: vehicles
+          method: get
+
+  updateVehicle:
+    handler: handler.update_vehicle
+    events:
+      - http:
+          path: vehicles/{id}
+          method: patch
+  logUpdates:
+    handler: handler.log_updates
+    events:
+      - stream:
+          type: dynamodb
+          arn:
+            Fn::GetAtt:
+              - VehiclesTable
+              - StreamArn
+
+resources:
+  Resources:
+    VehiclesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.VEHICLES_TABLE}  
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        StreamSpecification:
+          StreamViewType: NEW_AND_OLD_IMAGES
