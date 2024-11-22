@@ -2,6 +2,9 @@ import boto3
 import json
 import logging
 from uuid import uuid4
+import os
+
+os.environ["TABLE_NAME"] = "VehiclesTable"
 
 # Setup logging
 logger = logging.getLogger()
@@ -50,27 +53,22 @@ def get_vehicles(event, context):
             "body": json.dumps({"error": str(e)})
         }
 
+
 # Retrieve a specific vehicle by ID
 def get_vehicle_by_id(event, context):
-    vehicle_id = event['pathParameters']['id']
-    try:
-        response = table.get_item(Key={'id': vehicle_id})
-        if 'Item' in response:
-            return {
-                "statusCode": 200,
-                "body": json.dumps(response['Item'])
-            }
-        else:
-            return {
-                "statusCode": 404,
-                "body": json.dumps({"message": "Vehicle not found"})
-            }
-    except Exception as e:
-        logger.error(f"Error fetching vehicle: {e}")
-        return {
-            "statusCode": 500,
-            "body": json.dumps({"error": str(e)})
-        }
+    logger.info(f"Event: {event}")
+    vehicle_id = event["pathParameters"]["id"]
+
+    # Log table name
+    table_name = os.environ["TABLE_NAME"]
+    logger.info(f"Accessing table: {table_name}")
+    table = boto3.resource("dynamodb", region_name="us-east-1").Table(table_name)
+
+    response = table.get_item(Key={"id": vehicle_id})
+    if "Item" in response:
+        return {"statusCode": 200, "body": json.dumps(response["Item"])}
+    return {"statusCode": 404, "body": json.dumps({"error": "Vehicle not found"})}
+
 
 # Update a vehicle's status
 def update_vehicle(event, context):
