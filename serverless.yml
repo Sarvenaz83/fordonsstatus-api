@@ -5,7 +5,10 @@ provider:
   runtime: python3.9
   region: us-east-1
   environment:
-    VEHICLES_TABLE: VehiclesTable  
+    VEHICLES_TABLE: VehiclesTable
+  apiGateway:
+    apiKeys:
+      - myApiKey 
 
 functions:
   createVehicle:
@@ -28,6 +31,7 @@ functions:
       - http:
           path: vehicles/{id}
           method: patch
+
   logUpdates:
     handler: handler.log_updates
     events:
@@ -37,6 +41,14 @@ functions:
             Fn::GetAtt:
               - VehiclesTable
               - StreamArn
+
+  getVehicleById:
+    handler: handler.get_vehicle_by_id
+    events:
+      - http:
+          path: vehicle/{id}
+          method: get
+
 
 resources:
   Resources:
