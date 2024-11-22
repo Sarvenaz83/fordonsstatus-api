@@ -41,7 +41,7 @@ functions:
             Fn::GetAtt:
               - VehiclesTable
               - StreamArn
-
+              
   getVehicleById:
     handler: handler.get_vehicle_by_id
     events:
@@ -55,7 +55,7 @@ resources:
     VehiclesTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${self:provider.environment.VEHICLES_TABLE}  
+        TableName: VehiclesTable 
         AttributeDefinitions:
           - AttributeName: id
             AttributeType: S
@@ -65,3 +65,13 @@ resources:
         BillingMode: PAY_PER_REQUEST
         StreamSpecification:
           StreamViewType: NEW_AND_OLD_IMAGES
+
+package:
+  patterns:
+    - "!node_modules/**"
+    - "!venv/**"
+    - "!*.log"
+    - "!**/.git/**"
+    - "!fordonsstatus-frontend/**"
+    - "**" # Include all other necessary files
+
